@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Clock3,
   ExternalLink,
-  Headphones,
   Menu,
   MoveRight,
   Plus,
