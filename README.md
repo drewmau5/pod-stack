@@ -1,54 +1,37 @@
-# podstack
+# Podstack
 
 **Your podcast app plays it. Podstack plans it.**
 
-Podstack is a frontend prototype for planning a week of podcast listening before opening a podcast app. It remains a React + Vite application with browser-only persistence; there is no authentication, database, audio player, or podcast API.
+Podstack remains a React + Vite weekly podcast planner with responsive burgundy, rust, and parchment UI and browser `localStorage` persistence. Phase 1 adds real catalogue discovery without adding authentication, Supabase, OAuth, Spotify credentials, playback, or permanent media storage.
 
-## Revised product flow
+## Real podcast data
 
-Users can start in either of two ways:
+Discover calls `GET /api/podcasts/search?term=...`, a Vercel Node function that validates the query and searches the Apple iTunes Search API for Canadian podcasts. Results normalize IDs, titles, authors, artwork, genres, Apple URLs, RSS feed URLs, and episode counts when Apple supplies them. Search responses cache at the edge for five minutes and may be served stale while revalidating for fifteen minutes; results are therefore not live to the second.
 
-1. **Ready-made stacks:** Explore eight themed plans, preview the episodes, select one, then adjust days, approximate duration, and preferred listening service in Preferences.
-2. **Custom stack:** A compact three-step flow asks for listening days and duration windows, broad interests, then optional preferences. Listening style, tone, depth, and episode-selection controls are collapsed disclosures so optional details stay secondary.
+Selecting **View episodes** calls `GET /api/podcasts/feed?url=...`. The server validates public HTTP(S) URLs, rejects local/private targets, applies a timeout and 5 MB limit, and parses XML with `rss-parser` without executing feed content. It returns normalized show metadata and newest-first episodes including stable IDs, duration in minutes and seconds, dates, episode/season/type/explicit fields, webpage/audio/provider URLs, and feed provenance. Feed responses cache for 30 minutes with a one-hour stale-while-revalidate window.
 
-The completed experience opens on the weekly plan. It puts the recommendation for the browser's actual local day first, followed by a compact seven-day overview and alternate recommendations. If today is open, it identifies the next scheduled day. Week boundaries, day names, and the displayed current date are recalculated from `new Date()` on each app load.
+Artwork uses episode artwork first, then show artwork, then the stable local Podstack SVG. The UI retains aspect ratio, never recolours artwork, and replaces failed images through `onError`. Media is neither downloaded nor stored. RSS episode webpages are labelled **Open episode page**; Apple destinations are **Open in Apple Podcasts**. Prototype Spotify URLs are search fallbacks and are labelled **Search in Spotify**, never as direct episode links.
 
-## Swapping and weekly planning
+Real RSS episodes can be assigned to a chosen stack day, next week, or saved for later. They use the same normalized shape and localStorage state as prototype episodes, so Today and weekly views survive refreshes. The small local catalogue and ready-made stacks remain explicitly identified as prototype fallback data.
 
-- **Desktop:** Alternate cards can be dragged into a weekly day slot. Every card also retains an accessible **Swap in** button.
-- **Mobile:** Alternatives form a horizontal swipe carousel. The explicit button and day selector avoid relying on drag-and-drop.
-- The replaced episode is returned to the alternate carousel, a confirmation toast appears, and the most recent swap can be undone.
-- **Other picks for your stack** is collapsed below the week and provides unused recommendations that can be assigned to any day.
-- Listened and skipped statuses, swaps, the current stack, alternates, saved-for-later items, and next-week items persist in `localStorage` under `podstack.prototype.v3`.
-- Reset in Preferences clears all locally persisted prototype data.
+## Matching and duration preferences
 
-## Prototype recommendation policy
+Every selected day stores `{ targetMinutes, flexibility }`. Existing string windows such as `45–60 minutes` migrate on load. Close, balanced, and flexible preferences correspond approximately to ±10, ±25, and ±45 minutes. Duration affects a score rather than excluding candidates; interest, style, tone, depth, recency, selection preference, and serialized order can outweigh a modest duration difference. Real feeds are sorted newest-first and never receive fabricated dates.
 
-The local mock catalogue models the intended future policy rather than claiming live recommendations. It prefers a suitable, unplayed, recent episode that fits the selected duration. Recent recurring releases win by default; evergreen interviews may use a strong older match. Older samples are visibly marked **From the archive**. Serialized samples begin at episode one rather than a random middle episode. The user's selection preference—**Keep me current**, start from the beginning, best episodes, or a recent/archive mix—is stored for future ranking integration.
+## RSS limitations
 
-Episode records include podcast and episode names, podcast and episode artwork URLs, duration, release date, description, tags, interests, format, tone, depth, serialization fields, archive status, a general external URL, and Spotify, Apple Podcasts, YouTube Music, and Pocket Casts links.
+Publishers control RSS quality. Feeds may omit dates, duration, artwork, descriptions, episode pages, or enclosure URLs; use unusual duration formats; return malformed XML; block server requests; redirect; exceed the size limit; or disappear. Undated items remain available but sort behind valid dates. Apple generally supplies show links, not episode-specific Apple links, so RSS episodes usually expose their publisher webpage. Redirect targets are constrained by fetch behaviour, but Phase 1 does not perform provider identity matching.
 
-Artwork and all episode metadata are prototype fixtures, not live data. Public Apple-hosted artwork URLs demonstrate the final presentation, with a neutral local data-URI fallback if an image cannot load. Artwork keeps a square aspect ratio and is not filtered or recoloured.
-
-## Discover and preferences
-
-Discover is intentionally task-oriented: add a sample episode to this week, next week, or save it for later. Preferences can edit every stored day and duration, interests, optional style/tone/depth tags, episode selection mode, and preferred external listening service.
-
-## Future integrations
-
-1. Replace fixtures with a licensed podcast metadata/search provider and refresh release data server-side.
-2. Validate show and episode identifiers, artwork rights, publication dates, explicit flags, playable service deep links, and serialized episode order.
-3. Add listening-history imports or user-confirmed progress so ranking can exclude played episodes and continue serialized shows safely.
-4. Apply the documented ranking policy to live candidates, while retaining archive provenance and transparent selection reasons.
-5. A later product phase may add Supabase for accounts, cross-device preferences, stack history, saved episodes, and progress. **Supabase is intentionally not included in this prototype.**
+Future work will match RSS episodes to genuine Spotify episode IDs/direct links (and only then offer **Open in Spotify**) without introducing Spotify OAuth solely for search. A later phase may add Supabase accounts and cross-device persistence; current state remains local only.
 
 ## Development
 
 ```bash
 npm install
 npm run dev
+npm test
 npm run lint
 npm run build
 ```
 
-Vite handles local development and production builds. Existing Vercel rewrites preserve client-side routes such as `/explore`, `/onboarding`, `/today`, `/stack`, `/discover`, and `/profile`.
+Vercel serves `/api/podcasts/*` as functions while the non-API rewrite preserves `/explore`, `/onboarding`, `/today`, `/stack`, `/discover`, and `/profile`.
