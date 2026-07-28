@@ -1,12 +1,17 @@
-import { useEffect,useState } from 'react'
-import { freshState, migrateState } from '../utils/persistence'
-const KEY='podstack.phase2.v1', LEGACY='podstack.prototype.v3'
-export function usePrototype(){
- useEffect(()=>localStorage.setItem(KEY,JSON.stringify(state)),[state])
- const patch=value=>setState(current=>({...current,...value}))
- const updateStatus=(slotId,status)=>setState(current=>({...current,stack:current.stack.map(x=>x.slotId===slotId?{...x,status}:x),[status]:[...(current[status]||[]),slotId]}))
- const swap=(slotId,episode)=>setState(current=>{const old=current.stack.find(x=>x.slotId===slotId);if(!old)return current;const next={...episode,slotId,day:old.day,window:old.window,status:'planned'};return {...current,stack:current.stack.map(x=>x.slotId===slotId?next:x),alternates:[old,...current.alternates.filter(x=>x.id!==episode.id)],swaps:[...current.swaps,{slotId,from:old,to:next}]}})
- const undo=()=>setState(current=>{const action=current.swaps.at(-1);if(!action)return current;return {...current,stack:current.stack.map(x=>x.slotId===action.slotId?action.from:x),alternates:current.alternates.filter(x=>x.id!==action.from.id).concat(action.to),swaps:current.swaps.slice(0,-1)}})
- const reset=()=>{localStorage.removeItem(KEY);localStorage.removeItem(LEGACY);setState(freshState)}
- return {state,patch,updateStatus,swap,undo,reset}
+import { useEffect, useState } from 'react'
+import { clearStoredState, loadState, STORAGE_KEY } from '../utils/persistence'
+import { patchState, swapState, undoState, updateStatusState } from '../utils/prototypeState'
+
+export function usePrototype() {
+  const [state, setState] = useState(() => loadState())
+
+  useEffect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(state)), [state])
+
+  const patch = value => setState(current => patchState(current, value))
+  const updateStatus = (slotId, status) => setState(current => updateStatusState(current, slotId, status))
+  const swap = (slotId, episode) => setState(current => swapState(current, slotId, episode))
+  const undo = () => setState(undoState)
+  const reset = () => setState(clearStoredState())
+
+  return { state, patch, updateStatus, swap, undo, reset }
 }
