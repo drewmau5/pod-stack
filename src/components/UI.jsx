@@ -1,13 +1,7 @@
 import { Check, ExternalLink, Layers3 } from 'lucide-react'
-
-export function Logo() { return <span className="logo"><span className="stackmark" aria-hidden="true"><i/><i/><i/></span><b>podstack</b></span> }
-export function Tags({ items }) { return <div className="tags">{items.map(x => <span key={x}><Check size={12}/>{x}</span>)}</div> }
-export function ListenLink({ item, service, compact = false }) {
-  const known = service !== 'Other' && item.links?.[service]
-  const href = known || item.links?.general || '#'
-  return <a className={`primary ${compact ? 'compact' : ''}`} href={href} target="_blank" rel="noreferrer" aria-label={`Open ${item.title} in ${known ? service : 'your podcast app'}`}>
-    {known ? `Open in ${service}` : 'Open episode'} <ExternalLink size={16}/>
-  </a>
-}
-export function Artwork({ item }) { return <div className="art" aria-label={`${item.show} artwork`}><span>{item.art}</span><small>{item.show}</small></div> }
-export function LoadingStack() { return <div className="loading-stack" aria-hidden="true"><i/><i/><i/><Layers3/></div> }
+const fallback='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300"%3E%3Crect width="300" height="300" fill="%23D8CCC2"/%3E%3Cpath d="M90 130h120M90 155h120M90 180h120" stroke="%236D1F2B" stroke-width="14"/%3E%3C/svg%3E'
+export function Logo(){return <span className="logo"><span className="stackmark" aria-hidden="true"><i/><i/><i/></span><b>podstack</b></span>}
+export function Artwork({item,className=''}){return <img className={`artwork ${className}`} src={item.episodeArtworkUrl||item.artworkUrl} alt={`${item.podcastName} podcast artwork`} onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src=fallback}}/>}
+export function Tags({items=[]}){return <div className="tags">{items.filter(Boolean).map(x=><span key={x}><Check size={12}/>{x}</span>)}</div>}
+export function ListenLink({item,service,compact=false}){const urls={'Spotify':'spotifyUrl','Apple Podcasts':'appleUrl','YouTube Music':'youtubeMusicUrl','Pocket Casts':'pocketCastsUrl','Other':'externalUrl'};return <a className={`primary ${compact?'compact':''}`} href={item[urls[service]]||item.externalUrl} target="_blank" rel="noreferrer">Open in {service==='Other'?'podcast app':service}<ExternalLink size={15}/></a>}
+export function LoadingStack(){return <div className="loading-stack" aria-hidden="true"><i/><i/><i/><Layers3/></div>}

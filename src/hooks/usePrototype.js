@@ -1,18 +1,13 @@
-import { useEffect, useState } from 'react'
-import { buildStack, defaultState } from '../data/mockData'
-
-const KEY = 'podstack.prototype.v2'
-export function usePrototype() {
-  const [state, setState] = useState(() => {
-    try { return { ...defaultState, ...JSON.parse(localStorage.getItem(KEY)) } } catch { return defaultState }
-  })
-  useEffect(() => { localStorage.setItem(KEY, JSON.stringify(state)) }, [state])
-  const patch = (value) => setState(current => ({ ...current, ...value }))
-  const updateItem = (id, change) => patch({ stack: state.stack.map(item => item.id === id ? { ...item, ...change } : item) })
-  const swap = (id) => {
-    const replacement = buildStack(state.windows, Math.floor(Date.now() / 1000) % 5 + 1).find((_, i) => state.stack[i]?.id === id) || buildStack(state.windows, 2)[0]
-    patch({ stack: state.stack.map(item => item.id === id ? { ...replacement, day: item.day, date: item.date, context: item.context, time: item.time, duration: item.duration } : item) })
-  }
-  const reset = () => { localStorage.removeItem(KEY); setState(defaultState) }
-  return { state, patch, updateItem, swap, reset }
+import { useEffect,useState } from 'react'
+import { defaultState } from '../data/mockData'
+const KEY='podstack.prototype.v3'
+export function usePrototype(){
+ const [state,setState]=useState(()=>{try{return {...defaultState,...JSON.parse(localStorage.getItem(KEY))}}catch{return defaultState}})
+ useEffect(()=>localStorage.setItem(KEY,JSON.stringify(state)),[state])
+ const patch=value=>setState(current=>({...current,...value}))
+ const updateStatus=(slotId,status)=>setState(current=>({...current,stack:current.stack.map(x=>x.slotId===slotId?{...x,status}:x),[status]:[...(current[status]||[]),slotId]}))
+ const swap=(slotId,episode)=>setState(current=>{const old=current.stack.find(x=>x.slotId===slotId);if(!old)return current;const next={...episode,slotId,day:old.day,window:old.window,status:'planned'};return {...current,stack:current.stack.map(x=>x.slotId===slotId?next:x),alternates:[old,...current.alternates.filter(x=>x.id!==episode.id)],swaps:[...current.swaps,{slotId,from:old,to:next}]}})
+ const undo=()=>setState(current=>{const action=current.swaps.at(-1);if(!action)return current;return {...current,stack:current.stack.map(x=>x.slotId===action.slotId?action.from:x),alternates:current.alternates.filter(x=>x.id!==action.from.id).concat(action.to),swaps:current.swaps.slice(0,-1)}})
+ const reset=()=>{localStorage.removeItem(KEY);setState(defaultState)}
+ return {state,patch,updateStatus,swap,undo,reset}
 }
