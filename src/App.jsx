@@ -1,133 +1,61 @@
-import { useState } from 'react'
-import {
-  Apple, ArrowRight, Check, ChevronDown, CirclePlus, Clock3, Headphones,
-  Home, Library, MoreHorizontal, Play, Plus, Search, Settings2,
-  SlidersHorizontal, Sparkles, Star,
-} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowLeft, ArrowRight, CalendarPlus, Check, ChevronRight, CirclePlus, Clock3, LogOut, Menu, MoveRight, RefreshCw, Settings2, Trash2, X } from 'lucide-react'
+import { discoveries, genres, services, buildStack } from './data/mockData'
+import { usePrototype } from './hooks/usePrototype'
+import { Artwork, ListenLink, LoadingStack, Logo, Tags } from './components/UI'
 
-const episodes = [
-  { day: 'MON', date: '14', title: 'MYSTERIOUS DEATH OF: Bethany Decker', show: 'Crime Junkie', time: '52 min', art: 'junkie', badge: 'NEW' },
-  { day: 'TUE', date: '15', title: 'The Good Soldier', show: 'Dateline NBC', time: '44 min', art: 'date', badge: 'NEW' },
-  { day: 'WED', date: '16', title: 'The Vanishing at Lake Lanier', show: 'Park Predators', time: '38 min', art: 'park', badge: 'FOR YOU' },
-  { day: 'THU', date: '17', title: 'Death on the Towpath', show: 'Casefile True Crime', time: '1 hr 12 min', art: 'case', badge: 'FOR YOU' },
-  { day: 'FRI', date: '18', title: 'The Thing About Pam — Part 1', show: 'Dateline NBC', time: '41 min', art: 'date', badge: 'SAVED' },
-]
-
-const suggestions = [
-  { title: 'Anatomy of Murder', desc: 'A murder case told by those who know it best.', meta: 'Wednesdays · 45 min', score: '96%', art: 'anatomy', rank: '#12 True Crime' },
-  { title: 'CounterClock', desc: 'Investigative journalism that turns back the clock.', meta: 'Seasonal · 38 min', score: '92%', art: 'counter', rank: 'Listeners also love' },
-  { title: 'The Deck', desc: 'Cold cases told through the clues left behind.', meta: 'Wednesdays · 35 min', score: '89%', art: 'deck', rank: 'Rising this week' },
-]
-
-function Cover({ type, small = false }) {
-  return <div className={`cover ${type} ${small ? 'small' : ''}`} aria-label={`${type} podcast cover`}>
-    {type === 'junkie' && <><b>crime<br/>junkie</b><span>audiochuck</span></>}
-    {type === 'date' && <><i>DATELINE</i><b>NBC</b></>}
-    {type === 'park' && <><span>PARK</span><b>PREDATORS</b></>}
-    {type === 'case' && <><span>CASEFILE</span><b>TRUE CRIME</b></>}
-    {type === 'anatomy' && <><b>ANATOMY<br/>OF MURDER</b><span>audiochuck</span></>}
-    {type === 'counter' && <><span>SEASON 7</span><b>COUNTER<br/>CLOCK</b></>}
-    {type === 'deck' && <><span>THE</span><b>DECK</b><i>INVESTIGATES</i></>}
-  </div>
+const paths = { landing: '/', onboarding: '/onboarding', today: '/today', stack: '/stack', discover: '/discover', profile: '/profile', email: '/continue-with-email', check: '/check-email', signin: '/sign-in' }
+function useRoute() {
+  const get = () => Object.entries(paths).find(([, path]) => path === location.pathname)?.[0] || 'landing'
+  const [route, setRoute] = useState(get)
+  useEffect(() => { const pop = () => setRoute(get()); addEventListener('popstate', pop); return () => removeEventListener('popstate', pop) }, [])
+  const go = (name) => { history.pushState({}, '', paths[name]); setRoute(name); scrollTo(0, 0) }
+  return [route, go]
 }
 
-function Nav({ view, setView }) {
-  return <nav className="topnav">
-    <button className="brand" onClick={() => setView('home')}><span className="brandmark"><span/><span/><span/><span/></span>podstack</button>
-    <div className="navlinks">
-      <button className={view === 'home' ? 'active' : ''} onClick={() => setView('home')}>Home</button>
-      <button className={view === 'discover' ? 'active' : ''} onClick={() => setView('discover')}>Discover</button>
-      <button className={view === 'library' ? 'active' : ''} onClick={() => setView('library')}>My library</button>
-    </div>
-    <div className="navactions">
-      <button className="iconBtn" aria-label="Search"><Search size={20}/></button>
-      <button className="tuneBtn" onClick={() => setView('preferences')}><SlidersHorizontal size={18}/> Tune my stack</button>
-      <button className="avatar">AM</button>
-    </div>
-  </nav>
+function Nav({ route, go, signedIn }) {
+  const [open, setOpen] = useState(false)
+  const links = signedIn ? [['today','Today'],['stack','My Stack'],['discover','Discover']] : []
+  return <header className="nav"><button className="brand-button" onClick={() => go(signedIn ? 'today' : 'landing')}><Logo/></button>
+    {signedIn ? <><nav className={open ? 'navlinks open' : 'navlinks'} aria-label="Primary">{links.map(([key,label]) => <button className={route === key ? 'active' : ''} onClick={() => { go(key); setOpen(false) }} key={key}>{label}</button>)}<button className="avatar" onClick={() => go('profile')} aria-label="Open profile">AM</button></nav><button className="mobile-menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation">{open ? <X/> : <Menu/>}</button></> : <nav className="signedout"><a href="#how">How it works</a><button onClick={() => go('signin')}>Sign in</button><button className="primary compact" onClick={() => go('onboarding')}>Start stacking</button></nav>}
+  </header>
 }
 
-function WeekCard({ episode, index, onReplace }) {
-  const [done, setDone] = useState(false)
-  return <article className={`weekcard ${done ? 'done' : ''}`}>
-    <div className="date"><b>{episode.day}</b><span>{episode.date}</span></div>
-    <Cover type={episode.art} small />
-    <div className="epinfo">
-      <div className="badgerow"><span className={`badge ${episode.badge.toLowerCase().replace(' ', '')}`}>{episode.badge}</span></div>
-      <h3>{episode.title}</h3>
-      <p>{episode.show} <span>·</span> {episode.time}</p>
-    </div>
-    <div className="cardactions">
-      <button className="play" onClick={() => setDone(!done)} aria-label={done ? 'Mark unplayed' : 'Play episode'}>{done ? <Check/> : <Play fill="currentColor"/>}</button>
-      <button className="more" onClick={() => onReplace(index)} aria-label="Episode options"><MoreHorizontal/></button>
-    </div>
-  </article>
+function SampleCard({ item, service = 'Spotify' }) { return <article className="sample-card"><div className="dayline"><b>{item.day.toUpperCase()}</b><span>{item.context} · {item.duration} minutes available</span></div><div className="episode-row"><Artwork item={item}/><div><small>{item.show}</small><h3>{item.title}</h3><p>{item.episodeDuration} min</p></div></div><Tags items={item.reasons}/><ListenLink item={item} service={service} compact/></article> }
+
+function Landing({ go }) {
+  const sample = buildStack().filter((_, i) => [0,1,3].includes(i))
+  return <main><section className="landing-hero page"><div className="hero-copy"><p className="eyebrow">THE PLANNING LAYER FOR PODCASTS</p><h1>Your podcasts,<br/><em>already planned.</em></h1><p>Tell us when you listen, how much time you have, and what you like. Podstack builds a personalized schedule, so your next episode is always ready.</p><div className="button-row"><button className="primary" onClick={() => go('onboarding')}>Start stacking <ArrowRight/></button><a className="secondary" href="#example">See an example week</a></div><strong className="positioning">Your podcast app plays it. <span>Podstack plans it.</span></strong></div><div className="hero-stack" id="example"><p>Here’s what a week with Podstack looks like.</p>{sample.map(x => <SampleCard item={x} key={x.id}/>)}</div></section>
+    <section className="how page" id="how"><p className="eyebrow">HOW IT WORKS</p><h2>We build the stack. You press play.</h2><div className="steps">{[['01','Set your routine','Tell Podstack when you listen and how much time you usually have.'],['02','Tell us your taste','Choose the genres, shows, topics, and formats you enjoy, along with anything you want to avoid.'],['03','Start stacking','Podstack builds your schedule. Open it each day, see what’s next, and continue in the podcast app you already use.']].map(x => <article key={x[0]}><b>{x[0]}</b><h3>{x[1]}</h3><p>{x[2]}</p></article>)}</div><blockquote>Your stack is your ready-made listening lineup: the right episodes, in the right order, sized to fit your week.</blockquote></section>
+    <section className="cta"><h2>Know what you’re listening to before you leave.</h2><button className="primary" onClick={() => go('onboarding')}>Start stacking</button></section></main>
 }
 
-function HomeView({ setView }) {
-  const [week, setWeek] = useState(episodes)
-  const [notice, setNotice] = useState('')
-  const replace = (index) => {
-    const replacement = { day: week[index].day, date: week[index].date, title: 'A Killing on the Cape', show: '48 Hours', time: '46 min', art: 'case', badge: 'SWAPPED' }
-    setWeek(week.map((item, i) => i === index ? replacement : item))
-    setNotice(`${week[index].day}'s episode was swapped.`)
-    setTimeout(() => setNotice(''), 2200)
-  }
-  return <main>
-    {notice && <div className="toast"><Check size={17}/>{notice}</div>}
-    <section className="hero wrap">
-      <div><p className="eyebrow"><Sparkles size={15}/> YOUR PERSONAL LISTENING PLAN</p><h1>Your week,<br/><em>well listened.</em></h1><p className="intro">Five commutes. Five stories. Zero time spent searching.</p></div>
-      <div className="hero-meta">
-        <div><span>THIS WEEK</span><strong>3 hr 47 min</strong></div>
-        <div><span>YOUR GOAL</span><strong>5 episodes</strong></div>
-        <div className="progress"><i style={{width:'80%'}}/></div>
-        <small>Perfect fit for your weekday drives</small>
-      </div>
-    </section>
-
-    <section className="weeksection wrap">
-      <div className="sectionhead"><div><h2>Your weekday stack</h2><p>True crime · 40–90 min · Ready by 7:30 AM</p></div><button className="textBtn" onClick={() => setView('preferences')}><Settings2 size={17}/> Edit preferences</button></div>
-      <div className="weeklist">{week.map((ep, i) => <WeekCard episode={ep} index={i} key={ep.day} onReplace={replace}/>)}</div>
-      <button className="addday"><CirclePlus size={19}/> Add a weekend listen</button>
-    </section>
-
-    <section className="why wrap">
-      <div><span className="kicker">BUILT AROUND YOU</span><h2>Why this stack works</h2></div>
-      <div className="reason"><div className="reasonicon"><Clock3/></div><div><b>Fits your drive</b><p>Every episode is between 38 and 72 minutes.</p></div></div>
-      <div className="reason"><div className="reasonicon"><Star/></div><div><b>Fresh, not random</b><p>3 new releases, 2 picks based on your taste.</p></div></div>
-      <div className="reason"><div className="reasonicon"><Check/></div><div><b>No repeats</b><p>We’ve skipped everything you’ve already heard.</p></div></div>
-    </section>
-
-    <section className="discover wrap">
-      <div className="sectionhead"><div><span className="kicker">EXPAND YOUR ROTATION</span><h2>Podcasts made for your stack</h2></div><button className="outline" onClick={() => setView('discover')}>See all matches <ArrowRight size={17}/></button></div>
-      <div className="suggestgrid">{suggestions.map(s => <article className="suggest" key={s.title}><Cover type={s.art}/><div className="match">{s.score} match</div><div className="suggestbody"><span className="rank">{s.rank}</span><h3>{s.title}</h3><p>{s.desc}</p><div className="suggestfoot"><span><Clock3 size={14}/>{s.meta}</span><button aria-label={`Add ${s.title}`}><Plus/></button></div></div></article>)}</div>
-    </section>
-    <section className="bottomcta"><div><span className="brandmark light"><span/><span/><span/><span/></span></div><h2>Make every listen count.</h2><p>Your stack gets smarter as you listen, skip, and save.</p><button onClick={() => setView('preferences')}>Tune your preferences <ArrowRight size={17}/></button></section>
+function Onboarding({ model, go }) {
+  const { state, patch } = model; const [step, setStep] = useState(1); const [loading, setLoading] = useState(false); const [showInput, setShowInput] = useState('')
+  const setWindows = windows => patch({ windows }); const updateWindow = (id, field, value) => setWindows(state.windows.map(x => x.id === id ? {...x,[field]:value} : x))
+  const pref = state.preferences; const setPref = value => patch({ preferences: {...pref,...value} }); const toggle = (field, value) => setPref({ [field]: pref[field].includes(value) ? pref[field].filter(x=>x!==value) : [...pref[field], value] })
+  const build = () => { setLoading(true); setTimeout(() => { patch({ stack: buildStack(state.windows), onboardingComplete: true }); setLoading(false); setStep(6) }, 1300) }
+  if (loading) return <main className="center-page"><LoadingStack/><h1>Planning your week…</h1><p>Matching episodes to your schedule, preferences, and available time.</p><div role="status" className="sr-only">Building your listening plan</div></main>
+  if (step === 6) return <main className="center-page account-ready"><Logo/><p className="success"><Check/> COMPLETE</p><h1>Your stack is ready.</h1><p>Create an account to save your plan, preferences, and listening history.</p><button className="primary" onClick={() => go('email')}>Continue with email</button><small>We’ll email you a secure sign-in link. No password required.</small><button className="link" onClick={() => go('signin')}>Already have an account? Sign in</button><button className="secondary" onClick={() => { patch({prototypeSignedIn:true}); go('today') }}>Explore prototype without an account</button></main>
+  return <main className="onboarding page"><button className="back" onClick={() => step === 1 ? go('landing') : setStep(step-1)}><ArrowLeft/> Back</button><div className="progress" aria-label={`Step ${step} of 5`}><span style={{width:`${step*20}%`}}/></div><p className="eyebrow">STEP {step} OF 5</p>
+    {step === 1 && <section><h1>When do you usually listen?</h1><p>Create a window for each day. Each one can have its own time and length.</p><div className="window-list">{state.windows.map(w => <article className="window" key={w.id}><label>Day<select value={w.day} onChange={e=>updateWindow(w.id,'day',e.target.value)}>{['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(d=><option key={d}>{d}</option>)}</select></label><label>Context<input value={w.context} onChange={e=>updateWindow(w.id,'context',e.target.value)}/></label><label>Time<input type="time" aria-label={`${w.day} time`} onChange={e=>updateWindow(w.id,'time',e.target.value)} /></label><label>Minutes<input type="number" min="10" max="180" value={w.duration} onChange={e=>updateWindow(w.id,'duration',Number(e.target.value))}/></label><button className="icon" aria-label={`Remove ${w.day}`} onClick={()=>setWindows(state.windows.filter(x=>x.id!==w.id))}><Trash2/></button></article>)}</div><button className="secondary" onClick={()=>setWindows([...state.windows,{id:crypto.randomUUID(),day:'Saturday',date:'2',context:'Weekend walk',time:'10:00 AM',duration:45}])}><CirclePlus/> Add listening window</button></section>}
+    {step === 2 && <section><h1>What do you want to hear?</h1><p>Choose genres, then add favourite shows, topics, and formats.</p><h3>Genres</h3><div className="choice-grid">{genres.map(g=><button className={pref.genres.includes(g)?'selected':''} onClick={()=>toggle('genres',g)} key={g}>{pref.genres.includes(g)&&<Check/>}{g}</button>)}</div><label className="full-label">Favourite shows<input placeholder="Search or type a show" value={showInput} onChange={e=>setShowInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&showInput){e.preventDefault();setPref({shows:[...pref.shows,showInput]});setShowInput('')}}}/></label><div className="tags editable">{pref.shows.map(x=><span key={x}>{x}<button aria-label={`Remove ${x}`} onClick={()=>setPref({shows:pref.shows.filter(y=>y!==x)})}><X/></button></span>)}</div><h3>Preferred formats</h3><div className="choice-grid">{['Documentary','Interviews','Narrative','Roundtable','Short daily'].map(x=><button className={pref.formats.includes(x)?'selected':''} onClick={()=>toggle('formats',x)} key={x}>{x}</button>)}</div></section>}
+    {step === 3 && <section><h1>How should we build your stack?</h1><p>Set the rules once. You can change them anytime.</p><div className="rules">{[['newReleases','Prioritize new releases','Favor episodes published in the last seven days.'],['explicit','Avoid explicit content','Filter episodes marked explicit.'],['newShows','Mix in new shows','Add an occasional pick beyond your favourites.'],['serialized','Avoid serialized seasons','Skip episodes that require starting from episode one.'],['heard','Skip episodes already heard','Keep previously completed episodes out of your stack.']].map(([key,label,help])=><label className="toggle" key={key}><span><b>{label}</b><small>{help}</small></span><input type="checkbox" checked={pref.rules[key]} onChange={e=>setPref({rules:{...pref.rules,[key]:e.target.checked}})}/></label>)}</div><div className="lengths"><label>Minimum episode length<input type="number" value={pref.rules.min} onChange={e=>setPref({rules:{...pref.rules,min:Number(e.target.value)}})}/></label><label>Maximum episode length<input type="number" value={pref.rules.max} onChange={e=>setPref({rules:{...pref.rules,max:Number(e.target.value)}})}/></label></div><label className="full-label">Excluded topics<input placeholder="Add topics you would rather skip" value={pref.exclusions?.join(', ')||''} onChange={e=>setPref({exclusions:e.target.value.split(',').map(x=>x.trim()).filter(Boolean)})}/></label></section>}
+    {step === 4 && <section><h1>Where do you usually listen?</h1><p>We’ll use this app for every main episode button.</p><div className="service-list">{services.map(s=><button className={state.service===s?'selected':''} onClick={()=>patch({service:s})} key={s}><span>{s}</span>{state.service===s&&<Check/>}</button>)}</div></section>}
+    {step === 5 && <section className="ready"><LoadingStack/><h1>Ready to start stacking?</h1><p>Your next listens, stacked and ready. Your weekly plan will stay put until you edit or rebuild it.</p><button className="primary" onClick={build}>Build my first stack <ArrowRight/></button></section>}
+    {step < 5 && <div className="onboard-next"><button className="primary" disabled={step===1&&!state.windows.length} onClick={()=>setStep(step+1)}>Continue <ArrowRight/></button></div>}
   </main>
 }
 
-function Preferences({ onDone }) {
-  const [days, setDays] = useState(['Mon','Tue','Wed','Thu','Fri'])
-  const [genre, setGenre] = useState(['True Crime'])
-  const toggle = (value, list, setter) => setter(list.includes(value) ? list.filter(x => x !== value) : [...list, value])
-  return <main className="prefs wrap">
-    <button className="back" onClick={onDone}>← Back to my stack</button>
-    <div className="prefshead"><p className="eyebrow"><SlidersHorizontal size={15}/> PERSONALIZE YOUR PLAN</p><h1>Tune your stack.</h1><p>Tell us what fits your life. Change any of this, any time.</p></div>
-    <div className="prefgrid">
-      <section className="prefcard"><span className="step">01</span><h2>When do you listen?</h2><p>Pick the days you want a fresh episode ready.</p><div className="daypills">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => <button className={days.includes(d)?'selected':''} onClick={() => toggle(d,days,setDays)} key={d}>{days.includes(d)&&<Check size={14}/>} {d}</button>)}</div><label>Ready by <button className="select">7:30 AM <ChevronDown size={16}/></button></label></section>
-      <section className="prefcard"><span className="step">02</span><h2>What are you into?</h2><p>Choose one or mix a few. We’ll keep it balanced.</p><div className="chips">{['True Crime','News','Comedy','History','Science','Society & Culture'].map(g => <button className={genre.includes(g)?'selected':''} onClick={() => toggle(g,genre,setGenre)} key={g}>{genre.includes(g)&&<Check size={14}/>} {g}</button>)}</div><button className="subtle"><Plus size={16}/> Browse all genres</button></section>
-      <section className="prefcard"><span className="step">03</span><h2>How long is your window?</h2><p>We’ll only add episodes that fit.</p><div className="range"><span>20 min</span><div><i/><b/></div><span>90+ min</span></div><div className="duration"><strong>40</strong><span>to</span><strong>90</strong><small>minutes</small></div></section>
-      <section className="prefcard"><span className="step">04</span><h2>Fine-tune the mix</h2><p>Include what you love. Exclude what you don’t.</p><label className="switchrow"><div><b>Prioritize new releases</b><small>Favor episodes from the last 7 days</small></div><input type="checkbox" defaultChecked/><i/></label><label className="switchrow"><div><b>Avoid explicit content</b><small>Filter episodes marked explicit</small></div><input type="checkbox"/><i/></label><label className="switchrow"><div><b>Mix in new shows</b><small>Up to 2 discoveries per week</small></div><input type="checkbox" defaultChecked/><i/></label></section>
-    </div>
-    <div className="savebar"><div><Sparkles/><span><b>Your stack will include {days.length} episodes a week</b><small>{genre.join(' + ')} · 40–90 minutes</small></span></div><button onClick={onDone}>Save & rebuild my stack <ArrowRight size={18}/></button></div>
-  </main>
-}
+function Today({ model, go }) { const {state,updateItem,swap}=model; const item=state.stack.find(x=>x.status!=='listened')||state.stack[0]; if(!item)return <Empty go={go}/>; return <main className="product page"><p className="eyebrow">GOOD MORNING, {state.name.toUpperCase()}</p><h1>{item.day}’s listen is ready.</h1><div className="today-grid"><article className="today-card"><div className="today-art"><Artwork item={item}/><span>{item.episodeDuration} min</span></div><div><small>{item.show}</small><h2>{item.title}</h2><div className="context"><Clock3/><span><b>{item.context}</b>{item.time} · {item.duration} minutes available</span></div><Tags items={[...item.reasons, state.preferences.genres[0]]}/><ListenLink item={item} service={state.service}/><div className="secondary-actions"><button onClick={()=>swap(item.id)}><RefreshCw/>Swap episode</button><button onClick={()=>updateItem(item.id,{status:'listened'})}><Check/>Mark as listened</button><button onClick={()=>go('stack')}>View full stack<ChevronRight/></button></div></div></article><aside><p className="eyebrow">COMING UP</p><h2>The rest of your week</h2>{state.stack.filter(x=>x.id!==item.id).slice(0,4).map(x=><button className="up-next" onClick={()=>go('stack')} key={x.id}><b>{x.day.slice(0,3)} {x.date}</b><span>{x.title}<small>{x.show} · {x.episodeDuration} min</small></span><ChevronRight/></button>)}</aside></div></main> }
 
-function Placeholder({ type, setView }) {
-  return <main className="placeholder wrap"><div className="placeholderIcon">{type==='discover'?<Search/>:<Library/>}</div><p className="eyebrow">{type.toUpperCase()}</p><h1>{type==='discover'?'Find your next favorite.':'Everything you’ve saved.'}</h1><p>Explore shows by genre, release day, episode length, platform, and what listeners like you enjoy.</p><button onClick={() => setView('home')}>Return to your stack <ArrowRight size={17}/></button></main>
-}
+function Empty({go}) { return <main className="center-page"><h1>A fresh stack, ready when you are.</h1><button className="primary" onClick={()=>go('onboarding')}>Start stacking</button></main> }
+function Stack({model,go}) { const {state,patch,updateItem,swap}=model; const total=state.stack.reduce((a,x)=>a+x.episodeDuration,0); const remove=id=>patch({stack:state.stack.filter(x=>x.id!==id)}); const move=(item,index)=>{const copy=state.stack.filter(x=>x.id!==item.id);copy.splice(Math.min(index+1,copy.length),0,item);patch({stack:copy})}; return <main className="product page"><div className="page-heading"><div><p className="eyebrow">THIS WEEK’S LISTENING PLAN</p><h1>Your week is ready.</h1><p>{state.stack.length} episodes selected for {Math.floor(total/60)} hours and {total%60} minutes of listening.</p></div><div><button className="secondary" onClick={()=>go('profile')}><Settings2/>Edit my listening plan</button><button className="primary compact" onClick={()=>patch({stack:buildStack(state.windows,1)})}><RefreshCw/>Rebuild full stack</button></div></div><div className="full-stack">{state.stack.map((item,index)=><article className={`stack-item ${item.status==='listened'?'listened':''}`} key={item.id}><div className="stack-date"><b>{item.day.toUpperCase()}</b><strong>{item.date}</strong><span>{item.context}<small>{item.time} · {item.duration} min available</small></span></div><Artwork item={item}/><div className="stack-info"><small>{item.show}</small><h2>{item.title}</h2><p>{item.episodeDuration} min</p><Tags items={item.reasons}/></div><div className="stack-actions"><ListenLink item={item} service={state.service} compact/><div><button onClick={()=>swap(item.id)}><RefreshCw/> Swap</button><button onClick={()=>move(item,index)}><MoveRight/> Move</button><button onClick={()=>updateItem(item.id,{status:item.status==='listened'?'planned':'listened'})}><Check/> {item.status==='listened'?'Undo listened':'Listened'}</button><button onClick={()=>remove(item.id)}><Trash2/> Remove</button></div></div></article>)}</div><button className="add-weekend" onClick={()=>patch({stack:[...state.stack,...buildStack([{id:'sat',day:'Saturday',date:'2',context:'Weekend walk',time:'10:00 AM',duration:50}],3)]})}><CalendarPlus/>Add a weekend listen</button><section className="fit"><div><p className="eyebrow">PLANNED TO FIT YOUR WEEK</p><h2>Chosen for you, not at random.</h2></div><p>Every pick respects your available time, listening rules, favourite shows, and what you have already heard.</p></section></main> }
 
-export default function App() {
-  const [view, setView] = useState('home')
-  return <><Nav view={view} setView={setView}/>{view==='home'&&<HomeView setView={setView}/>} {view==='preferences'&&<Preferences onDone={()=>setView('home')}/>} {(view==='discover'||view==='library')&&<Placeholder type={view} setView={setView}/>}<footer><span>© 2026 Podstack</span><div><Apple size={15}/> Apple Podcasts <span>·</span> <Headphones size={15}/> Spotify <span>·</span> <Home size={15}/> Your listening, your way</div></footer></>
-}
+function Discover({model}) { const {state,patch}=model; const [notice,setNotice]=useState(''); const add=(item,target)=>{if(target==='saved')patch({saved:[...state.saved,item]});if(target==='next')patch({nextWeek:[...state.nextWeek,item]});if(target==='week')patch({stack:[...state.stack,{...item,id:`added-${Date.now()}`}]});setNotice(`${item.title} added to ${target==='week'?'this week':target==='next'?'next week':'saved for later'}.`)}; return <main className="product page"><p className="eyebrow">DISCOVER WITH A PURPOSE</p><h1>Find something worth adding.</h1><p>Recommendations that fit your plan—not an endless directory.</p><div className="discover-grid">{discoveries.map(item=><article className="discovery" key={item.id}><Artwork item={item}/><div><small>{item.show}</small><h2>{item.title}</h2><p>{item.episodeDuration} min</p><Tags items={item.reasons}/><div className="add-actions"><button className="primary compact" onClick={()=>add(item,'week')}>Add to this week</button><button onClick={()=>add(item,'next')}>Next week</button><button onClick={()=>add(item,'saved')}>Save for later</button></div></div></article>)}</div><div className="status" role="status">{notice}</div></main> }
+
+function Profile({model,go}) { const {state,patch,reset}=model; const pref=state.preferences; return <main className="product page profile"><p className="eyebrow">ACCOUNT & PREFERENCES</p><h1>Your listening plan.</h1><div className="profile-grid"><section><h2>Profile</h2><label>Display name<input value={state.name} onChange={e=>patch({name:e.target.value})}/></label><label>Preferred listening app<select value={state.service} onChange={e=>patch({service:e.target.value})}>{services.map(x=><option key={x}>{x}</option>)}</select></label></section><section><h2>Listening taste</h2><label>Genres<input value={pref.genres.join(', ')} onChange={e=>patch({preferences:{...pref,genres:e.target.value.split(',').map(x=>x.trim())}})}/></label><label>Favourite shows<input value={pref.shows.join(', ')} onChange={e=>patch({preferences:{...pref,shows:e.target.value.split(',').map(x=>x.trim())}})}/></label><label>Excluded topics<input value={pref.exclusions?.join(', ')||''} onChange={e=>patch({preferences:{...pref,exclusions:e.target.value.split(',').map(x=>x.trim())}})}/></label></section><section><h2>Routine & rules</h2><p>{state.windows.length} listening windows · {pref.rules.min}–{pref.rules.max} minute episodes</p><button className="secondary" onClick={()=>go('onboarding')}>Edit routine and listening rules</button></section><section><h2>Saved for later</h2><p>{state.saved.length} saved episode{state.saved.length===1?'':'s'}</p></section></div><div className="danger"><h2>Prototype data</h2><p>Reset all locally saved preferences, listening history, and stacks on this device.</p><button onClick={()=>{reset();go('landing')}}><Trash2/>Reset prototype data</button></div><button className="signout" onClick={()=>{patch({prototypeSignedIn:false});go('landing')}}><LogOut/>Sign out</button></main> }
+
+function Auth({type,model,go}) { const {state,patch}=model; const submit=e=>{e.preventDefault();go('check')}; if(type==='check')return <main className="center-page auth"><Logo/><p className="success"><Check/> EMAIL SENT</p><h1>Check your email.</h1><p>We sent a secure sign-in link to <b>{state.email||'you@example.com'}</b>. This prototype does not send a real email.</p><button className="secondary" onClick={()=>{patch({prototypeSignedIn:true});go('today')}}>Continue to prototype</button></main>; return <main className="center-page auth"><Logo/><h1>{type==='signin'?'Welcome back.':'Save your stack.'}</h1><p>{type==='signin'?'Enter your email and we’ll send a secure sign-in link.':'Continue with email to keep your plan, preferences, and listening history.'}</p><form onSubmit={submit}><label>Email address<input required type="email" placeholder="you@example.com" value={state.email} onChange={e=>patch({email:e.target.value})}/></label><button className="primary" type="submit">Email me a secure link</button></form><small>No password required. Email delivery is placeholder functionality.</small></main> }
+
+export default function App(){ const model=usePrototype(); const [route,go]=useRoute(); const signed=['today','stack','discover','profile'].includes(route); let content; if(route==='landing')content=<Landing go={go}/>; else if(route==='onboarding')content=<Onboarding model={model} go={go}/>; else if(route==='today')content=<Today model={model} go={go}/>; else if(route==='stack')content=<Stack model={model} go={go}/>; else if(route==='discover')content=<Discover model={model}/>; else if(route==='profile')content=<Profile model={model} go={go}/>; else content=<Auth type={route==='check'?'check':route==='signin'?'signin':'email'} model={model} go={go}/>; return <><Nav route={route} go={go} signedIn={signed}/>{content}<footer><Logo/><p>Your podcast app plays it. Podstack plans it.</p><span>© 2026 Podstack</span></footer></> }
