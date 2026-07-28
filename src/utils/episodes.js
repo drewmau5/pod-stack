@@ -24,11 +24,9 @@ export function sortEpisodesNewestFirst(episodes = []) {
 }
 export const findLatestEpisode = episodes => sortEpisodesNewestFirst(episodes).find(item => Date.parse(item.releaseDate)) || episodes[0] || null
 
-export function scoreEpisodeForSlot(episode, slot = {}, preferences = {}) {
-  const duration = normalizeDurationPreference(slot.window || slot)
-  const difference = episode.durationMinutes == null ? duration.targetMinutes : Math.abs(episode.durationMinutes - duration.targetMinutes)
-  const tolerance = FLEXIBILITY_MINUTES[duration.flexibility]
-  let score = Math.max(-25, 25 - (difference / tolerance) * 15)
+export function scoreEpisodeForSlot(episode, _slot = {}, preferences = {}) {
+  void _slot
+  let score = 0
   const interests = preferences.interests || []
   score += (episode.interests || []).filter(x => interests.includes(x)).length * 35
   if (preferences.styles?.includes(episode.format)) score += 15
