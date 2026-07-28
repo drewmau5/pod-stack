@@ -1,8 +1,9 @@
 import { useEffect,useState } from 'react'
 import { defaultState } from '../data/mockData'
+import { normalizeDurationPreference } from '../utils/episodes'
 const KEY='podstack.prototype.v3'
 export function usePrototype(){
- const [state,setState]=useState(()=>{try{return {...defaultState,...JSON.parse(localStorage.getItem(KEY))}}catch{return defaultState}})
+ const [state,setState]=useState(()=>{try{const stored={...defaultState,...JSON.parse(localStorage.getItem(KEY))};return {...stored,selectedDays:Object.fromEntries(Object.entries(stored.selectedDays||{}).map(([day,value])=>[day,normalizeDurationPreference(value)]))}}catch{return {...defaultState,selectedDays:Object.fromEntries(Object.entries(defaultState.selectedDays).map(([day,value])=>[day,normalizeDurationPreference(value)]))}}})
  useEffect(()=>localStorage.setItem(KEY,JSON.stringify(state)),[state])
  const patch=value=>setState(current=>({...current,...value}))
  const updateStatus=(slotId,status)=>setState(current=>({...current,stack:current.stack.map(x=>x.slotId===slotId?{...x,status}:x),[status]:[...(current[status]||[]),slotId]}))

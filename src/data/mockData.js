@@ -10,14 +10,7 @@ export const preferenceGroups = {
 }
 export const episodeSelections = ['Keep me current','Start from the beginning','Best episodes','Mix recent and older']
 
-const art = [
-  'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/d8/45/24/d84524f9-4c7c-70f2-cd79-c1a35a5b01c7/mza_13395761927869878468.jpg/600x600bb.jpg',
-  'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/45/7f/7a/457f7a08-957e-4e8f-133f-10c65578fa3b/mza_13316881474246641548.jpg/600x600bb.jpg',
-  'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/58/91/2d/58912d11-3e99-1e7b-cd09-a793431375f2/mza_17207353415333775507.jpg/600x600bb.jpg',
-  'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/f3/d9/6f/f3d96f13-c4f6-3192-f46c-fec44f5a0f87/mza_12447427873011078340.jpg/600x600bb.jpg',
-  'https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/09/91/89/099189be-56a3-a709-9b52-18e77656cab8/mza_16065875582244438356.jpg/600x600bb.jpg',
-  'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/24/10/ef/2410ef45-782f-e12d-3c27-3483fe07a555/mza_619436314033869869.jpg/600x600bb.jpg',
-]
+const art = Array(6).fill('/podstack-artwork.svg')
 const linkSet = query => ({
   externalUrl:`https://www.google.com/search?q=${encodeURIComponent(query+' podcast')}`,
   spotifyUrl:`https://open.spotify.com/search/${encodeURIComponent(query)}`,
