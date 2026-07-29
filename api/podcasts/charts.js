@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     if (!podcasts.length) throw new Error('Apple chart contained no usable podcasts.')
     // Apple's chart omits RSS URLs. Resolve them in one server-side lookup request.
     const lookup = await fetch(`https://itunes.apple.com/lookup?id=${podcasts.map(x => x.id).join(',')}&entity=podcast&country=${country}`, { signal: controller.signal })
-    if (lookup.ok) { const data = await lookup.json(); const byId = new Map((data.results || []).map(x => [String(x.collectionId), x])); podcasts.forEach(p => { const x = byId.get(p.id); if (x) { p.feedUrl = x.feedUrl || null; p.genres = x.genres || p.genres; p.artworkUrl = x.artworkUrl600 || p.artworkUrl } }) }
+    if (lookup.ok) { const data=await lookup.json(); const byId=new Map((data.results||[]).map(x=>[String(x.collectionId),x])); podcasts.forEach(p=>{const x=byId.get(p.appleCollectionId);if(x){p.feedUrl=x.feedUrl||null;p.genres=x.genres||p.genres;p.appleShowArtworkUrl=x.artworkUrl600||p.appleShowArtworkUrl;p.showArtworkUrl=p.appleShowArtworkUrl;p.appleArtworkCollectionId=p.appleCollectionId}}) }
     res.setHeader('Cache-Control', 's-maxage=10800, stale-while-revalidate=21600')
     return res.status(200).json({ podcasts, source: 'apple-chart' })
   } catch (error) { return res.status(error.name === 'AbortError' ? 504 : 502).json({ error: error.name === 'AbortError' ? 'Apple chart request timed out.' : error.message }) }

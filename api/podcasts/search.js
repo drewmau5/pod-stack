@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     const response = await fetch(`https://itunes.apple.com/search?${params}`, { signal: controller.signal })
     if (!response.ok) throw new Error('Apple podcast search is temporarily unavailable.')
     const data = await response.json()
-    const podcasts = (data.results || []).map(x => ({ id: String(x.collectionId), title: x.collectionName, author: x.artistName, artworkUrl: x.artworkUrl600 || x.artworkUrl100 || null, genres: x.genres || [], appleUrl: x.collectionViewUrl || null, feedUrl: x.feedUrl || null, ...(Number.isFinite(x.trackCount) ? { episodeCount: x.trackCount } : {}) }))
+    const podcasts = (data.results || []).map(x => { const appleCollectionId=String(x.collectionId); return ({ id:appleCollectionId,podcastId:appleCollectionId,appleCollectionId,appleArtworkCollectionId:appleCollectionId,title:x.collectionName,author:x.artistName,appleShowArtworkUrl:x.artworkUrl600||x.artworkUrl100||null,showArtworkUrl:x.artworkUrl600||x.artworkUrl100||null,showArtworkSource:'apple-show',artworkSource:'apple-show',genres:x.genres||[],appleUrl:x.collectionViewUrl||null,feedUrl:x.feedUrl||null,...(Number.isFinite(x.trackCount)?{episodeCount:x.trackCount}:{}) }) })
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=900')
     return res.status(200).json({ podcasts })
   } catch (error) { return res.status(error.name === 'AbortError' ? 504 : 502).json({ error: error.name === 'AbortError' ? 'Apple podcast search timed out.' : error.message }) }

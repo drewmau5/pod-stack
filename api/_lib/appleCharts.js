@@ -6,8 +6,8 @@ export function normalizeChart(payload, country = 'ca', limit = 10, updatedAt = 
   const rows = payload?.feed?.results
   if (!Array.isArray(rows)) throw new Error('Apple chart returned an unexpected response.')
   return rows.slice(0, Math.min(25, limit)).map((item, index) => ({
-    rank: index + 1, id: text(item.id), title: text(item.name), author: text(item.artistName),
-    artworkUrl: text(item.artworkUrl100) || null, appleUrl: text(item.url) || null, feedUrl: null,
+    rank:index+1,id:text(item.id),podcastId:text(item.id),appleCollectionId:text(item.id),appleArtworkCollectionId:text(item.id),title:text(item.name),author:text(item.artistName),
+    appleShowArtworkUrl:text(item.artworkUrl100)||null,showArtworkUrl:text(item.artworkUrl100)||null,showArtworkSource:'apple-show',artworkSource:'apple-show',appleUrl:text(item.url)||null,feedUrl:null,
     genres: Array.isArray(item.genres) ? item.genres.map(x => text(x.name)).filter(Boolean) : [],
     chartCountry: country.toLowerCase(), chartUpdatedAt: updatedAt, source: 'apple-chart',
   })).filter(item => item.id && item.title && item.appleUrl)

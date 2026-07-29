@@ -9,7 +9,6 @@ export const preferenceGroups = {
 }
 export const episodeSelections = ['Keep me current','Start from the beginning','Best episodes','Mix recent and older']
 
-const art = Array(6).fill('/podstack-artwork.svg')
 const linkSet = query => ({
   externalUrl:`https://www.google.com/search?q=${encodeURIComponent(query+' podcast')}`,
   spotifyUrl:`https://open.spotify.com/search/${encodeURIComponent(query)}`,
@@ -29,4 +28,4 @@ const raw = [
  ['Planet Money','Why Everything Costs What It Costs',27,'2026-07-24',['Business','News'],'Standalone episodes','Informative','Quick overview',false,false,'New this week'],
  ['Conan O’Brien Needs a Friend','A Very Serious Conversation',58,'2026-07-21',['Comedy','Interviews'],'Interviews','Funny','Quick overview',false,false,'Something different'],
 ]
-export const episodes = raw.map((e,i) => ({id:`episode-${i+1}`,podcastName:e[0],episodeTitle:e[1],artworkUrl:art[i%art.length],episodeArtworkUrl:art[i%art.length],durationMinutes:e[2],releaseDate:e[3],description:'A prototype episode selected to demonstrate Podstack’s weekly planning experience.',tags:[e[11]],interests:e[4],format:e[5],tone:e[6],depth:e[7],isSerialized:e[8],episodeNumber:e[8]?1:null,seasonNumber:e[8]?1:null,isArchive:e[9],selectionReason:e[10],...linkSet(`${e[0]} ${e[1]}`)}))
+export const episodes = raw.map((e,i) => ({id:`episode-${i+1}`,podcastId:`sample-${e[0]}`,podcastName:e[0],episodeTitle:e[1],showArtworkUrl:null,episodeArtworkUrl:null,displayArtworkUrl:'/podstack-artwork.svg',artworkSource:'podstack-fallback',durationMinutes:e[2],releaseDate:e[3],description:'A prototype episode selected to demonstrate Podstack’s weekly planning experience.',tags:[e[11]],interests:e[4],format:e[5],tone:e[6],depth:e[7],isSerialized:e[8],episodeNumber:e[8]?1:null,seasonNumber:e[8]?1:null,isArchive:e[9],selectionReason:e[10],...linkSet(`${e[0]} ${e[1]}`)}))
