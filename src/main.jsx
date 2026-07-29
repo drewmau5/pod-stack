@@ -8,6 +8,7 @@ import './styles/motion.css'
 import './styles/global.css'
 import './styles.css'
 import './styles/brand.css'
+import './styles/product.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode><App /></StrictMode>,

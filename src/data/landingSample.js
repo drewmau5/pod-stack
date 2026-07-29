@@ -1,7 +1,8 @@
-// Display-only abstract brand artwork. Real search, RSS, and generated stacks keep using publisher artwork.
+// Stable podcast identities for the homepage. Artwork is hydrated from Apple search
+// and always rendered by the shared Artwork component.
 export const landingSample = [
-  {podcastId:'podstack-example-01',day:'Monday',title:'Narrative investigation',showArtworkUrl:'/brand/abstract-cover-01.svg',displayArtworkUrl:'/brand/abstract-cover-01.svg',artworkSource:'podstack-abstract'},
-  {podcastId:'podstack-example-02',day:'Tuesday',title:'A history deep-dive',showArtworkUrl:'/brand/abstract-cover-02.svg',displayArtworkUrl:'/brand/abstract-cover-02.svg',artworkSource:'podstack-abstract'},
-  {podcastId:'podstack-example-03',day:'Wednesday',title:'Ideas for the commute',showArtworkUrl:'/brand/abstract-cover-03.svg',displayArtworkUrl:'/brand/abstract-cover-03.svg',artworkSource:'podstack-abstract'},
-  {podcastId:'podstack-example-04',day:'Thursday',title:'A reflective reset',showArtworkUrl:'/brand/abstract-cover-04.svg',displayArtworkUrl:'/brand/abstract-cover-04.svg',artworkSource:'podstack-abstract'},
+  {podcastId:'1322200189',appleCollectionId:'1322200189',title:'Crime Junkie',author:'audiochuck',feedUrl:'https://feeds.megaphone.fm/ADL9840290619'},
+  {podcastId:'809264944',appleCollectionId:'809264944',title:'Criminal',author:'Vox Media Podcast Network',feedUrl:'https://feeds.megaphone.fm/VMP7924981569'},
+  {podcastId:'1537788786',appleCollectionId:'1537788786',title:'The Rest Is History',author:'Goalhanger',feedUrl:'https://feeds.megaphone.fm/GLT4787413333'},
+  {podcastId:'1200361736',appleCollectionId:'1200361736',title:'The Daily',author:'The New York Times',feedUrl:'https://feeds.simplecast.com/54nAGcIl'},
 ]

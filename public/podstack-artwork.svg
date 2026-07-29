@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="Podstack fallback artwork"><rect width="300" height="300" fill="#d8ccc2"/><rect x="58" y="83" width="184" height="30" rx="7" fill="#6d1f2b"/><rect x="75" y="135" width="167" height="30" rx="7" fill="#a3472d"/><rect x="58" y="187" width="184" height="30" rx="7" fill="#3e1119"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="PodStack fallback artwork">
+  <rect width="300" height="300" fill="#f2eee6"/>
+  <rect x="48" y="46" width="174" height="174" fill="#faf8f3" stroke="#171512" stroke-width="7"/>
+  <rect x="66" y="65" width="174" height="174" fill="#ddd4c5" stroke="#171512" stroke-width="7"/>
+  <path d="M94 97h102M94 123h102M94 149h70" stroke="#171512" stroke-width="8"/>
+  <text x="94" y="198" fill="#7b202b" font-family="monospace" font-size="18" font-weight="bold">PODSTACK</text>
+  <text x="150" y="270" text-anchor="middle" fill="#171512" font-family="monospace" font-size="13">ARTWORK UNAVAILABLE</text>
+</svg>

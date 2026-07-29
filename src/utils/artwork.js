@@ -8,7 +8,6 @@ export function isUsableArtworkUrl(value, { allowFallback = true } = {}) {
   const url = value.trim()
   if (url === PODSTACK_ARTWORK_FALLBACK) return allowFallback
   if (blockedLocalArtwork.test(url) || tinySignals.test(url)) return false
-  if (url.startsWith('/brand/abstract-cover-')) return true
   try { return ['http:', 'https:'].includes(new URL(url).protocol) } catch { return false }
 }
 
@@ -44,7 +43,7 @@ export function resolveShowArtwork(item = {}) {
   if (rss) return { url: rss, source: 'rss-channel' }
   const canonical = valid(item.showArtworkUrl)
   const canonicalMatches = item.showArtworkIdentityKey && item.showArtworkIdentityKey === artworkIdentityKey(item)
-  if (canonical && (canonicalMatches || canonical.startsWith('/brand/abstract-cover-'))) return { url: canonical, source: item.showArtworkSource || 'canonical-show' }
+  if (canonical && canonicalMatches) return { url: canonical, source: item.showArtworkSource || 'canonical-show' }
   const index = valid(item.podcastIndexArtworkUrl)
   if (index) return { url: index, source: 'podcast-index' }
   return { url: PODSTACK_ARTWORK_FALLBACK, source: 'podstack-fallback' }
