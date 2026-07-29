@@ -1,0 +1,13 @@
+:root {
+  --paper:#f2eee6;--paper-bright:#faf8f3;--paper-aged:#ddd4c5;
+  --ink:#171512;--ink-soft:#4e4943;--ink-muted:#746d64;
+  --oxblood:#7b202b;--oxblood-dark:#56151e;--forest:#183a32;--forest-dark:#102821;
+  --mineral-rust:#b76342;--mineral-blue:#526b70;--rule:#aaa195;--rule-light:#d5cec3;
+  --surface:rgba(250,248,243,.88);--focus-ring:#1c5f9e;
+  --shadow-paper:0 1px 1px rgba(23,21,18,.08),0 9px 24px rgba(23,21,18,.1);
+  --radius-none:0;--radius-small:2px;--radius-medium:6px;--radius-control:3px;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.5rem;--space-6:2rem;--space-7:3rem;--space-8:4.5rem;--space-9:7rem;
+  --text-display-xl:clamp(4.75rem,9vw,9.25rem);--text-display-lg:clamp(3.5rem,6.5vw,7rem);--text-heading:clamp(2rem,3.4vw,3.75rem);--text-subheading:clamp(1.4rem,2vw,2rem);--text-body-lg:1.125rem;--text-body:1rem;--text-small:.875rem;--text-utility:.75rem;
+  --motion-fast:180ms;--motion-medium:360ms;--motion-sequence:1200ms;
+  --card:var(--paper-bright);--line:var(--rule-light);--muted:var(--ink-muted);--wine:var(--oxblood-dark);--burgundy:var(--oxblood);--rust:var(--mineral-rust);--terra:var(--mineral-blue);--shadow:rgba(23,21,18,.1);
+}
