@@ -1,7 +1,7 @@
-// Display-only sample data. This module is never imported by the recommendation engine.
+// Display-only abstract brand artwork. Real search, RSS, and generated stacks keep using publisher artwork.
 export const landingSample = [
-  { day: 'Monday', title: 'Crime Junkie', artworkUrl: '/sample-artwork/crime-junkie.svg' },
-  { day: 'Tuesday', title: 'The Rest Is History', artworkUrl: '/sample-artwork/rest-is-history.svg' },
-  { day: 'Wednesday', title: 'Criminal', artworkUrl: '/sample-artwork/criminal.svg' },
-  { day: 'Thursday', title: 'Dan Snow’s History Hit', artworkUrl: '/sample-artwork/history-hit.svg' },
+  {podcastId:'podstack-example-01',day:'Monday',title:'Narrative investigation',showArtworkUrl:'/brand/abstract-cover-01.svg',displayArtworkUrl:'/brand/abstract-cover-01.svg',artworkSource:'podstack-abstract'},
+  {podcastId:'podstack-example-02',day:'Tuesday',title:'A history deep-dive',showArtworkUrl:'/brand/abstract-cover-02.svg',displayArtworkUrl:'/brand/abstract-cover-02.svg',artworkSource:'podstack-abstract'},
+  {podcastId:'podstack-example-03',day:'Wednesday',title:'Ideas for the commute',showArtworkUrl:'/brand/abstract-cover-03.svg',displayArtworkUrl:'/brand/abstract-cover-03.svg',artworkSource:'podstack-abstract'},
+  {podcastId:'podstack-example-04',day:'Thursday',title:'A reflective reset',showArtworkUrl:'/brand/abstract-cover-04.svg',displayArtworkUrl:'/brand/abstract-cover-04.svg',artworkSource:'podstack-abstract'},
 ]

@@ -4,7 +4,6 @@ import crypto from 'node:crypto'
 import Parser from 'rss-parser'
 import { parseDuration, sortEpisodesNewestFirst } from '../../src/utils/episodes.js'
 
-export const FALLBACK_ARTWORK = '/podstack-artwork.svg'
 const privateIp = ip => ip === '::1' || ip.startsWith('127.') || ip.startsWith('10.') || ip.startsWith('192.168.') || ip.startsWith('169.254.') || ip.startsWith('0.') || /^172\.(1[6-9]|2\d|3[01])\./.test(ip) || ip.startsWith('fc') || ip.startsWith('fd') || ip.startsWith('fe80')
 export async function validateFeedUrl(input, resolve = dns.lookup) {
   let url
@@ -19,14 +18,14 @@ export async function validateFeedUrl(input, resolve = dns.lookup) {
 const clean = value => String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 const id = value => crypto.createHash('sha256').update(String(value)).digest('hex').slice(0, 24)
 export function normalizeFeed(parsed, feedUrl) {
-  const artworkUrl = parsed.itunes?.image || parsed.image?.url || FALLBACK_ARTWORK
-  const show = { id: id(feedUrl), title: parsed.title || 'Untitled podcast', author: parsed.itunes?.author || parsed.creator || '', description: clean(parsed.description), artworkUrl, feedUrl, websiteUrl: parsed.link || null, genres: [parsed.itunes?.categories, parsed.categories].flat(2).filter(Boolean) }
+  const rssShowArtworkUrl=parsed.itunes?.image||parsed.image?.url||null
+  const podcastId=id(feedUrl); const show={id:podcastId,podcastId,podcastGuid:parsed.podcastGuid||null,title:parsed.title||'Untitled podcast',author:parsed.itunes?.author||parsed.creator||'',description:clean(parsed.description),rssShowArtworkUrl,showArtworkUrl:rssShowArtworkUrl,showArtworkSource:'rss-channel',artworkSource:rssShowArtworkUrl?'rss-channel':'podstack-fallback',feedUrl,websiteUrl:parsed.link||null,genres:[parsed.itunes?.categories,parsed.categories].flat(2).filter(Boolean)}
   const episodes = (parsed.items || []).map(item => {
     const duration = parseDuration(item.itunes?.duration)
-    const episodeArtworkUrl = item.itunes?.image || null
+    const episodeArtworkUrl=item.itunes?.image||item.itunesImage?.href||item.itunesImage||null
     const guid = item.guid || item.id || item.link || item.enclosure?.url || `${item.title}-${item.pubDate}`
-    return { id: id(`${feedUrl}:${guid}`), guid: String(guid), podcastName: show.title, episodeTitle: item.title || 'Untitled episode', description: clean(item.contentSnippet || item.content || item.summary), artworkUrl: episodeArtworkUrl || artworkUrl || FALLBACK_ARTWORK, episodeArtworkUrl, ...duration, releaseDate: Number.isNaN(Date.parse(item.isoDate || item.pubDate)) ? null : new Date(item.isoDate || item.pubDate).toISOString(), episodeNumber: Number(item.itunes?.episode) || null, seasonNumber: Number(item.itunes?.season) || null, episodeType: item.itunes?.episodeType || null, isExplicit: /^(yes|true|explicit)$/i.test(item.itunes?.explicit || ''), webpageUrl: item.link || null, audioUrl: item.enclosure?.url || null, appleUrl: null, feedUrl, sourceType: 'rss' }
+    return {id:id(`${feedUrl}:${guid}`),guid:String(guid),podcastId,podcastGuid:show.podcastGuid,podcastName:show.title,podcastAuthor:show.author,episodeTitle:item.title||'Untitled episode',description:clean(item.contentSnippet||item.content||item.summary),rssShowArtworkUrl,showArtworkUrl:rssShowArtworkUrl,showArtworkSource:'rss-channel',episodeArtworkUrl,displayArtworkUrl:episodeArtworkUrl||rssShowArtworkUrl||'/podstack-artwork.svg',artworkSource:episodeArtworkUrl?'rss-episode':rssShowArtworkUrl?'rss-channel':'podstack-fallback',...duration,releaseDate:Number.isNaN(Date.parse(item.isoDate||item.pubDate))?null:new Date(item.isoDate||item.pubDate).toISOString(),episodeNumber:Number(item.itunes?.episode)||null,seasonNumber:Number(item.itunes?.season)||null,episodeType:item.itunes?.episodeType||null,isExplicit:/^(yes|true|explicit)$/i.test(item.itunes?.explicit||''),webpageUrl:item.link||null,audioUrl:item.enclosure?.url||null,appleUrl:null,feedUrl,sourceType:'rss'}
   })
   return { show, episodes: sortEpisodesNewestFirst(episodes) }
 }
-export const parser = new Parser({ timeout: 8000, maxRedirects: 3, customFields: { item: [['itunes:image','itunesImage',{keepArray:false}], ['itunes:episode','itunesEpisode']] } })
+export const parser=new Parser({timeout:8000,maxRedirects:3,customFields:{feed:[['podcast:guid','podcastGuid',{keepArray:false}]],item:[['itunes:image','itunesImage',{keepArray:false}],['itunes:episode','itunesEpisode']]}})
