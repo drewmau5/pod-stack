@@ -247,7 +247,7 @@ Typography is a primary brand asset.
 
 #### Display
 
-**Instrument Serif**
+**Bricolage Grotesque**
 
 Use for:
 
@@ -284,7 +284,7 @@ Use for:
 
 ```css
 :root {
-  --font-display: "Instrument Serif", Georgia, serif;
+  --font-display: "Bricolage Grotesque", "IBM Plex Sans", sans-serif;
   --font-body: "IBM Plex Sans", sans-serif;
   --font-utility: "IBM Plex Mono", monospace;
 }

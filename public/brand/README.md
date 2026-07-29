@@ -11,7 +11,6 @@ All files in this directory are original, lightweight SVG assets created for the
 | `catalogue-strip.svg` | Vertical formulation catalogue strip | Yes | reusable asset kit |
 | `registration-marks.svg` | Print-registration detail | Yes | hero collage |
 | `paper-noise.svg` | Very low-opacity paper fibre texture | Yes | global paper surface |
-| `abstract-cover-01.svg`–`04.svg` | Intentionally abstract fallback covers (not fictional podcast artwork) | Yes | static homepage example and curated cards |
 
 ## Sample artwork audit
 
